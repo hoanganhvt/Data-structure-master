@@ -1,68 +1,51 @@
 #include<iostream>
-#include<algorithm>
-#include<deque>
-#include<cstdio>
+#include<set>
 #include<vector>
+
 using namespace std;
 
-struct Path{
-	int dest;
-	int cost;
-};
+typedef pair<int,int> II; 
 
-struct Graph{
-	int V;
-	vector<Path>*Adj;
-};
 
-Graph newGraph(Graph g,int N){
-	g.V = N;
-	g.Adj = new vector<Path>[N+1];
-	return g;
-}
-
-void addEdg(Graph *g,int u,int v,int cost){
-	g->Adj[u].push_back(Path{v,cost});
-	g->Adj[v].push_back(Path{u,cost});
-}
-
-bool visited[10000];
 int Length[10000];
-int shortestPath(Graph g,int Start,int End){
-	deque<int>q;
-	q.push_back(Start);
-	while(!q.empty()){
-		int u = q.back();
-		printf("dang o %d \n",u);
-		cout << u << endl;
-		for(int i = 0; i < g.Adj[u].size();i++){
-			int v = g.Adj[u][i].dest;
-			if(!visited[v]){
-				if(Length[v] == 0){
-					q.push_back(v);
-					Length[v] = Length[u]+g.Adj[u][i].cost;
-				}
-				else{
-					q.push_back(v);
-					Length[v] = min(Length[v],g.Adj[u][i].cost);
-				}
+bool explored[10000];
+vector<II>*Adj;
+void Dijstra(II Start){
+	set<II>Q;
+	explored[Start.second] = 1;
+	Q.insert(Start);
+	while(Q.size()){
+		II Point = *Q.begin();
+		Q.erase(Point);
+		int u = Point.second;
+		for(int i = 0; i < Adj[u].size();i++){
+			int v = Adj[u][i].second;
+			int newL = Adj[u][i].first;
+			if(!explored[v]){
+				explored[v] = 1;
+				Length[v] = Length[u]+newL;
+				Q.insert(II(Length[v],v));
+			}
+			else if(Length[u]+newL < Length[v]){
+				Length[v] = Length[u]+newL;
+				Q.insert(II(Length[v],v));
 			}
 		}
-		visited[u] = 1;
-		q.pop_front();
 	}
-	return Length[End];
 }
 int main(){
-	int N,m;
-	cin >> N >> m;
-	Graph g = newGraph(g,N);
-	for(int i = 0;i<m;i++){
-		int u,v,c;
-		cin >> u >> v >> c;
-		addEdg(&g,u,v,c);
+	int N,t;
+	cin >> N >> t;
+	Adj = new vector<II>[N+1];
+	for(int i = 0; i < t;i++){
+		int u,v,cost;
+		cin >> u >> v >> cost;
+		Adj[u].push_back(II(cost,v));
 	}
-	int Start,End;
-	cin >> Start >> End;
-	cout << shortestPath(g,Start,End) << endl;
+	Dijstra(II(0,1));
+	for(int i = 1; i <= N;i++){
+		cout << Length[i] << " ";
+	}
+	cout << endl;
+	system("pause");
 }
